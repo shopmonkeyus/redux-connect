@@ -1,13 +1,13 @@
 {
-  "name": "redux-connect",
-  "version": "10.0.0",
+  "name": "@shopmonkeyus/redux-connect",
+  "version": "10.0.1",
   "description": "It allows you to request async data, store them in redux state and connect them to your react component.",
   "main": "lib/index.js",
   "module": "es/index.js",
   "sideEffects": false,
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/makeomatic/redux-connect"
+  "repository": "git://github.com/shopmonkeyus/redux-connect",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "build": "yarn build:lib && yarn build:es",

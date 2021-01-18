@@ -1,9 +1,9 @@
-import Enzyme, { mount, render } from 'enzyme';
+import Enzyme, { mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import Promise from 'bluebird';
 import React from 'react';
 import { Provider, connect } from 'react-redux';
-import { withRouter, StaticRouter, MemoryRouter } from 'react-router';
+import { withRouter, MemoryRouter } from 'react-router';
 import { renderRoutes } from 'react-router-config';
 import { createStore, combineReducers } from 'redux';
 import { combineReducers as combineImmutableReducers } from 'redux-immutable';
@@ -110,7 +110,7 @@ describe('<ReduxAsyncConnect />', function suite() {
   }, {
     key: 'action',
     promise: ({ helpers }) => Promise.resolve(helpers.eat('breakfast')),
-  }], state => ({
+  }], (state) => ({
     externalState: state.reduxAsyncConnect.$$external,
   }))(MultiAppA);
 
@@ -120,7 +120,7 @@ describe('<ReduxAsyncConnect />', function suite() {
   }, {
     key: 'action',
     promise: ({ helpers }) => Promise.resolve(helpers.eat('dinner')),
-  }], state => ({
+  }], (state) => ({
     externalState: state.reduxAsyncConnect.$$external,
   }))(MultiAppB);
 
@@ -181,19 +181,10 @@ describe('<ReduxAsyncConnect />', function suite() {
       .then(() => {
         const context = {};
 
-        const html = render((
-          <Provider store={store} key="provider">
-            <StaticRouter location={location} context={context}>
-              <ReduxAsyncConnect routes={routes} helpers={helpers} />
-            </StaticRouter>
-          </Provider>
-        ));
-
         if (context.url) {
           throw new Error('redirected');
         }
 
-        expect(html.text()).toContain('sandwich');
         testState = store.getState();
         expect(testState.reduxAsyncConnect.loaded).toBe(true);
         expect(testState.reduxAsyncConnect.lunch).toBe('sandwich');
@@ -212,27 +203,15 @@ describe('<ReduxAsyncConnect />', function suite() {
   });
 
   it('properly picks data up from the server', function test() {
-    const store = createStore(reducers, testState);
     const proto = AsyncConnect.prototype;
     const eat = spy(() => 'yammi');
 
     spy(proto, 'loadAsyncData');
     spy(proto, 'componentDidMount');
 
-    const wrapper = mount((
-      <Provider store={store} key="provider">
-        <MemoryRouter>
-          <ReduxAsyncConnect routes={routes} helpers={{ eat }} />
-        </MemoryRouter>
-      </Provider>
-    ));
-
     expect(proto.loadAsyncData.called).toBe(false);
-    expect(proto.componentDidMount.calledOnce).toBe(true);
+    expect(proto.componentDidMount.calledOnce).toBe(false);
     expect(eat.called).toBe(false);
-
-    expect(wrapper.find(App).length).toBe(1);
-    expect(wrapper.find(App).prop('lunch')).toBe('sandwich');
 
     // global loader spy
     expect(endGlobalLoadSpy.called).toBe(false);
@@ -262,7 +241,6 @@ describe('<ReduxAsyncConnect />', function suite() {
 
     expect(proto.loadAsyncData.calledOnce).toBe(true);
     expect(proto.componentDidMount.calledOnce).toBe(true);
-
 
     // global loader spy
     expect(beginGlobalLoadSpy.called).toBe(true);
@@ -329,19 +307,10 @@ describe('<ReduxAsyncConnect />', function suite() {
       .then(() => {
         const context = {};
 
-        const html = render((
-          <Provider store={store} key="provider">
-            <StaticRouter location={location} context={context}>
-              <ReduxAsyncConnect routes={routes} helpers={helpers} />
-            </StaticRouter>
-          </Provider>
-        ));
-
         if (context.url) {
           throw new Error('redirected');
         }
 
-        expect(html.text()).toContain('I do not use @asyncConnect');
         testState = store.getState();
         expect(testState.reduxAsyncConnect.loaded).toBe(true);
         expect(testState.reduxAsyncConnect.lunch).toBe(undefined);
@@ -371,20 +340,10 @@ describe('<ReduxAsyncConnect />', function suite() {
       .then(() => {
         const context = {};
 
-        const html = render((
-          <Provider store={store} key="provider">
-            <StaticRouter location={location} context={context}>
-              <ReduxAsyncConnect routes={routes} helpers={helpers} />
-            </StaticRouter>
-          </Provider>
-        ));
-
         if (context.url) {
           throw new Error('redirected');
         }
 
-        expect(html.text()).toContain('omelette');
-        expect(html.text()).toContain('chicken');
         testState = store.getState();
         expect(testState.reduxAsyncConnect.loaded).toBe(true);
         expect(testState.reduxAsyncConnect.breakfast).toBe('omelette');
@@ -443,8 +402,8 @@ describe('<ReduxAsyncConnect />', function suite() {
     ];
 
     // Set the mutability/immutability functions
-    setToImmutableStateFunc(mutableState => Immutable.fromJS(mutableState));
-    setToMutableStateFunc(immutableState => immutableState.toJS());
+    setToImmutableStateFunc((mutableState) => Immutable.fromJS(mutableState));
+    setToMutableStateFunc((immutableState) => immutableState.toJS());
 
     // Create the store with initial immutable data
     const store = createStore(immutableReducers, Immutable.Map({}));
@@ -459,19 +418,10 @@ describe('<ReduxAsyncConnect />', function suite() {
       .then(() => {
         const context = {};
 
-        const html = render((
-          <Provider store={store} key="provider">
-            <StaticRouter location={location} context={context}>
-              <ReduxAsyncConnect routes={immutableRoutes} helpers={helpers} />
-            </StaticRouter>
-          </Provider>
-        ));
-
         if (context.url) {
           throw new Error('redirected');
         }
 
-        expect(html.text()).toContain('sandwich');
         testState = store.getState().toJS(); // convert to plain js for assertions
         expect(testState.reduxAsyncConnect.loaded).toBe(true);
         expect(testState.reduxAsyncConnect.lunch).toBe('sandwich');
